@@ -61,7 +61,7 @@ Centralized error handling for game lifecycle failures:
 
 ---
 
-## 🏗️ Technical Project Topology
+## Technical Project Topology
 ```text
 src/
 ├── controller/        # Game Loop Engine, Input Handlers, Thread Manager
