@@ -2,40 +2,71 @@
 
 <div align="center">
 
-![Java](https://img.shields.io/badge/Java-11%2B-ED8B00?style=for-the-badge&logo=java&logoColor=white)
-![JavaFX](https://img.shields.io/badge/JavaFX-17-blue?style=for-the-badge&logo=openjdk&logoColor=white)
-![Architecture](https://img.shields.io/badge/Architecture-MVC-green?style=for-the-badge)
-![Threading](https://img.shields.io/badge/Threading-Multi--Threaded-red?style=for-the-badge)
+<img src="https://img.shields.io/badge/Java-11%2B-ED8B00?style=for-the-badge&logo=java&logoColor=white" alt="Java">
+<img src="https://img.shields.io/badge/JavaFX-17-blue?style=for-the-badge&logo=openjdk&logoColor=white" alt="JavaFX">
+<img src="https://img.shields.io/badge/Architecture-MVC-green?style=for-the-badge" alt="Architecture">
+<img src="https://img.shields.io/badge/Concurrency-Multi--Threaded-red?style=for-the-badge" alt="Concurrency">
+<img src="https://img.shields.io/badge/Design%20Pattern-Strategy%20%7C%20Factory-orange?style=for-the-badge" alt="Design Pattern">
+
+<p align="center">
+    <strong>A High-Performance, Real-Time Strategy (RTS) Defense Engine</strong><br>
+    An enterprise-grade game simulation featuring complex AI pathfinding, multi-threaded game-loop synchronization, polymorphic entity systems, and a decoupled MVC architecture.
+</p>
 
 </div>
 
-## 📖 Overview
-A sophisticated, high-performance Tower Defense game engine developed as a final project for Advanced Programming. This project focuses on **Clean Code principles**, **architectural integrity**, and **real-time concurrent processing** using JavaFX.
+---
 
-## 🚀 Key Engineering Highlights
-*   **Architectural Pattern:** Strictly decoupled **Model-View-Controller (MVC)** to ensure separation of concerns between game logic, data persistence, and UI rendering.
-*   **Concurrency & Performance:** Utilized `AnimationTimer` and specialized thread pools to decouple high-overhead calculations (collision detection, pathfinding) from the UI thread, ensuring a stable **60 FPS**.
-*   **Object-Oriented Design:** Leveraged deep polymorphism to implement a flexible entity system. Abstract base classes for `Tower` and `Raider` allow for easy expansion of game units.
-*   **Modular Architecture:** Structured using modern `module-info.java` to enforce encapsulation and manage dependencies efficiently.
+## Domain Model & Class Hierarchy
 
-## 🛠 Technical Specifications
-### Game Entities
-*   **Polymorphic Raiders:** Diverse enemy types with unique AI behaviors (e.g., Flying, Shielded, Saboteur).
-*   **Defensive Towers:** Strategic grid-based placement with upgradeable levels and distinct damage types (Physical, Magical, AoE, Summoning).
-*   **Spell Interface:** An extensible interface-driven system for game-changing global effects (Heal, Freeze, Economy Boost, Global Cleansing).
+The core system is engineered with a rigorous Object-Oriented inheritance tree, ensuring strong polymorphism and high extensibility for future unit expansions.
 
-### Engine Components
-- **Controller:** Manages user input, lifecycle events, and state synchronization.
-- **Model:** Handles complex coordinate vectors, map pathing, and entity statistics.
-- **View:** FXML-based modular UI with dynamic resource rendering.
+### Defensive Tower Hierarchy (`Tower`)
+- `Tower` *(Abstract)* — Base class for all defensive structures, managing health, upgrade logic, and cost telemetry.
+  - `ArcherTower` — High-frequency, single-target physical damage.
+  - `WizardTower` — Magic-based damage, ignores shielding mechanics.
+  - `MortarTower` — Area of Effect (AoE) logic utilizing Euclidean collision detection.
+  - `BarracksTower` *(Bonus)* — Manages a sub-lifecycle of AI-controlled militia units.
 
-## 🏗️ Project Structure
+### Raider AI Hierarchy (`Raider`)
+- `Raider` *(Abstract)* — Base interface for enemy entities, implementing path traversal and state management.
+  - `FlyingRaider` — Bypasses ground-based obstacles using coordinate vector overrides.
+  - `ShieldedRaider` — Implements damage-mitigation protocols.
+  - `Saboteur` — Aggressively targets defensive structures over end-point objectives.
+
+---
+
+## Key Architectural Pillars
+
+### 1. High-Performance Multi-Threaded Game Loop
+To ensure a consistent **60 FPS** while managing hundreds of concurrent calculations, the engine utilizes:
+- **Asynchronous Execution:** Heavy tasks like Raider AI pathfinding and collision physics are offloaded from the UI Thread using custom `ExecutorServices`.
+- **Thread Safety:** Synchronization of shared game states (Gold, Health, Raider Positions) is managed via `Platform.runLater()` and atomic references to prevent race conditions during rendering cycles.
+
+### 2. Extensible Spell & Ability System
+Implemented using the **Strategy Pattern**, allowing for plug-and-play global effects:
+- `Spell` *(Interface)* — Defines `drop()` and `getPrice()` contracts.
+- **Global Field Effects:** Includes `Freeze` (temporal state override), `Heal` (arithmetic health mutation), and `Nuke` (mass entity deletion).
+
+### 3. Dynamic MVC Rendering Engine
+- **Controller:** Orchestrates event-driven interactions, map pathing logic, and state synchronization.
+- **Model:** Handles pure mathematical coordinate vectors and entity statistics.
+- **View:** Reactive FXML/JavaFX interface that monitors model state changes via the **Observer Pattern**.
+
+### 4. Robust Custom Exception Handling
+Centralized error handling for game lifecycle failures:
+- `InvalidPlacementException`: Triggered when entity coordinates violate grid-map constraints.
+- `InsufficientFundsException`: Ensures atomic transaction security during tower construction/upgrades.
+- `LevelLoadException`: Handles resource/asset corruption during scene initialization.
+
+---
+
+## 🏗️ Technical Project Topology
 ```text
 src/
-├── controller/        # Event-driven input handlers
-├── model/             # Core logic, state management, and entities
-├── view/              # JavaFX UI lifecycle and scene management
-└── exceptions/        # Custom runtime error handling
-resources/
-├── view/              # FXML layouts
-└── images/            # Assets and graphical sprites
+├── controller/        # Game Loop Engine, Input Handlers, Thread Manager
+├── model/             # Entities (Tower/Raider), Pathing Algorithms, State Database
+├── view/              # FXML Layouts, CSS Skins, JavaFX Render Nodes
+├── exceptions/        # Domain-specific game logic error classes
+├── interfaces/        # Spell contracts and Entity behaviors
+└── module-info.java   # Modular project configuration
